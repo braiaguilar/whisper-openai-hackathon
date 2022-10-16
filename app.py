@@ -18,22 +18,22 @@ print(
     f"and has {sum(np.prod(p.shape) for p in model.parameters()):,} parameters."
 )
 
-# here we would use the audio file from the user
-whisperOutput = model.transcribe("audio.wav")
+whisperOutput = model.transcribe('./audio.wav')
 
-# here we should add the order to summarize the text
-prompt = "Write a short summary of this text:" + whisperOutput["text"]
+prompt = "Write a short summary of this text: {}".format(whisperOutput['text'])
 
 print("### Prompt for GPT-3: " + prompt)
 
-response = openai.Completion.create(
-    model="text-davinci-002",
-    prompt=prompt,
-    temperature=0.7,
-    max_tokens=256,
-    top_p=1,
-    frequency_penalty=0,
-    presence_penalty=0,
-)
+def gpt3complete(speech):
+    response = openai.Completion.create(
+        model="text-davinci-002",
+        prompt=prompt,
+        temperature=0.7,
+        max_tokens=256,
+        top_p=1,
+        frequency_penalty=0,
+        presence_penalty=0,
+    )
+    print("### GPT-3 output: " + response)
 
-print("### GPT-3 output: " + response)
+    return response.choices[0].text
