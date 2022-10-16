@@ -5,26 +5,26 @@ import numpy as np
 import torch
 from dotenv import load_dotenv
 
-load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
 
-torch.cuda.is_available()
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+def app(audioFile):
+    load_dotenv()
+    openai.api_key = os.getenv("OPENAI_API_KEY")
 
-model = whisper.load_model("base", device=DEVICE)
-print(
-    "### Model info: "
-    f"Model is {'multilingual' if model.is_multilingual else 'English-only'} "
-    f"and has {sum(np.prod(p.shape) for p in model.parameters()):,} parameters."
-)
+    torch.cuda.is_available()
+    DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
-whisperOutput = model.transcribe('./audio.wav')
+    model = whisper.load_model("base", device=DEVICE)
+    print(
+        "### Model info: "
+        f"Model is {'multilingual' if model.is_multilingual else 'English-only'} "
+        f"and has {sum(np.prod(p.shape) for p in model.parameters()):,} parameters."
+    )
+    whisperOutput = model.transcribe(audioFile)
 
-prompt = "Write a short summary of this text: {}".format(whisperOutput['text'])
+    prompt = "Write a short summary of this text: {}".format(
+        whisperOutput['text'])
+    print("### Prompt for GPT-3: " + prompt)
 
-print("### Prompt for GPT-3: " + prompt)
-
-def gpt3complete(speech):
     response = openai.Completion.create(
         model="text-davinci-002",
         prompt=prompt,
@@ -34,6 +34,6 @@ def gpt3complete(speech):
         frequency_penalty=0,
         presence_penalty=0,
     )
-    print("### GPT-3 output: " + response)
+    print("### GPT-3 output: " + response.choices[0].text)
 
     return response.choices[0].text
